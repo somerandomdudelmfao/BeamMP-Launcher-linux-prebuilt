@@ -62,6 +62,8 @@ bool CheckBytes(uint32_t Bytes) {
 }
 
 void GameSend(std::string_view Data) {
+    if (!GConnected)
+        return;
     static std::mutex Lock;
     std::scoped_lock Guard(Lock);
     auto ToSend = Utils::PrependHeader<std::string_view>(Data);
