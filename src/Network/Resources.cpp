@@ -163,7 +163,11 @@ std::vector<char> TCPRcvRaw(SOCKET Sock, uint64_t& GRcv, uint64_t Size) {
     int i = 0;
     do {
         // receive at most some MB at a time
-        int Len = std::min(int(Size - Rcv), 1 * 1024 * 1024);
+        uint64_t Len = std::min<uint64_t>((Size - Rcv), 1 * 1024 * 1024);
+        if (Len == 0) {
+            error("Download size miscalculation");
+            break;
+        }
         int Temp = recv(Sock, &File[Rcv], Len, MSG_WAITALL);
         if (Temp == -1 || Temp == 0) {
             debug("Recv returned: " + std::to_string(Temp));
@@ -579,7 +583,12 @@ void NewSyncResources(SOCKET Sock, const std::string& Mods, const std::vector<Mo
             }
 #endif
 
-            fs::copy_file(PathToSaveTo, std::filesystem::path(GetGamePath()) / "mods/multiplayer" / FName, fs::copy_options::overwrite_existing);
+            std::error_code ec;
+            fs::copy_file(PathToSaveTo, std::filesystem::path(GetGamePath()) / "mods/multiplayer" / FName, fs::copy_options::overwrite_existing, ec);
+            if (ec) {
+                error(beammp_wide("Error in copy_file during download of ") + beammp_fs_string(PathToSaveTo) + beammp_wide(": ") + Utils::ToWString(ec.message()));
+                break;
+            }
             UpdateModUsage(FName);
         }
         WaitForConfirm();
