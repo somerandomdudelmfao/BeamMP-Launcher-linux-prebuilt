@@ -199,6 +199,7 @@ void ParserAsync(std::string_view Data) {
         return;
     case 'U':
         magic = Data.substr(1);
+        return;
     default:
         break;
     }
