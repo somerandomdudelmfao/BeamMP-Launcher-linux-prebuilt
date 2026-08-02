@@ -168,7 +168,8 @@ std::vector<char> TCPRcvRaw(SOCKET Sock, uint64_t& GRcv, uint64_t Size) {
             error("Download size miscalculation");
             break;
         }
-        int Temp = recv(Sock, &File[Rcv], Len, MSG_WAITALL);
+
+        int Temp = RecvWaitAll(Sock, &File[Rcv], Len);
         if (Temp == -1 || Temp == 0) {
             debug("Recv returned: " + std::to_string(Temp));
             if (Temp == -1) {
