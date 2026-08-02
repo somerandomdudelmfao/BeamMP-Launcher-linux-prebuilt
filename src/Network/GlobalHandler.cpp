@@ -63,7 +63,7 @@ bool CheckBytes(uint32_t Bytes) {
 
 void GameSend(std::string_view Data) {
     if (!GConnected) {
-        debug("Tried to call GameSend but socket was not connected. Data: " + Data)
+        debug("Tried to call GameSend but socket was not connected. Data: " + std::string(Data));
         return;
     }
     static std::mutex Lock;
