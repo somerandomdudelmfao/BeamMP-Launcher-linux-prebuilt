@@ -307,7 +307,7 @@ void InvalidResource(const std::string& File) {
 }
 
 struct ModInfo {
-    static std::pair<bool, std::vector<ModInfo>> ParseModInfosFromPacket(const std::string& packet) {
+    static std::optional<std::pair<bool, std::vector<ModInfo>>> ParseModInfosFromPacket(const std::string& packet) {
         bool success = false;
         std::vector<ModInfo> modInfos;
         try {
@@ -326,6 +326,12 @@ struct ModInfo {
 
                 if (entry.contains("protected")) {
                     modInfo.Protected = entry["protected"];
+                }
+
+                if (auto fsFile = std::filesystem::path(modInfo.FileName);
+                    !fsFile.has_filename() || fsFile.filename().string() != modInfo.FileName ||
+                    !fsFile.filename().has_extension() || fsFile.filename().extension() != ".zip"){
+                    return std::nullopt;
                 }
 
                 modInfos.push_back(modInfo);
@@ -616,7 +622,13 @@ void SyncResources(SOCKET Sock) {
     if (Ret.starts_with("R")) {
         debug("This server is likely outdated, not trying to parse new mod info format");
     } else {
-        auto [success, modInfo] = ModInfo::ParseModInfosFromPacket(Ret);
+        auto ParsedInfo = ModInfo::ParseModInfosFromPacket(Ret);
+        if (!ParsedInfo.has_value()) {
+            error("Invalid mod info");
+            Terminate = true;
+            return;
+        }
+        auto [success, modInfo] = ParsedInfo.value();
 
         if (success) {
             NewSyncResources(Sock, Ret, modInfo);
