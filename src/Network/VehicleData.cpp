@@ -7,6 +7,7 @@
 #include "Network/network.hpp"
 #include "Zlib/Compressor.h"
 #include <stdexcept>
+#include <thread>
 
 #if defined(_WIN32)
 #include <ws2tcpip.h>
@@ -93,9 +94,12 @@ void UDPClientMain(const std::string& IP, int Port) {
     ToServer->sin_port = htons(Port);
     inet_pton(AF_INET, IP.c_str(), &ToServer->sin_addr);
     UDPSock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (!magic.empty())
-        for (int i = 0; i < 10; i++)
+    if (!magic.empty()) {
+        for (int i = 0; i < 10; i++) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             UDPSend(magic);
+        }
+    }
     GameSend("P" + std::to_string(ClientID));
     TCPSend("H", TCPSock);
     UDPSend("p");
