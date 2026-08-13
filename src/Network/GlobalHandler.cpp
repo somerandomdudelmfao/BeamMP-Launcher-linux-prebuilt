@@ -77,7 +77,7 @@ void ServerSend(std::string Data, bool Rel) {
         C = Data.at(0);
     if (C == 'O' || C == 'T')
         Ack = true;
-    if (C == 'N' || C == 'W' || C == 'Y' || C == 'V' || C == 'E' || C == 'C')
+    if (C == 'N' || C == 'W' || C == 'Y' || C == 'V' || C == 'E' || C == 'C' || C == 't')
         Rel = true;
     if (compressBound(Data.size()) > 1024)
         Rel = true;
